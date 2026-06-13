@@ -17,11 +17,11 @@ export function Kpi({
 }) {
   const accentClass =
     accent === "trueup"
-      ? "text-emerald-600"
+      ? "text-pink-500"
       : accent === "bonus"
-        ? "text-amber-600"
+        ? "text-orange-500"
         : accent === "base"
-          ? "text-slate-600"
+          ? "text-rose-400"
           : "text-foreground";
   return (
     <Card>

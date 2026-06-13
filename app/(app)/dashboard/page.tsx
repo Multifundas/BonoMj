@@ -17,6 +17,8 @@ import { EmptyYear } from "@/components/EmptyYear";
 import { ZoneBar } from "@/components/ZoneBar";
 import { PaceBadge } from "@/components/PaceBadge";
 import { Alerts } from "@/components/Alerts";
+import { MotivationBanner } from "@/components/MotivationBanner";
+import { Milestone } from "@/components/Milestone";
 import { DashboardKpis } from "./DashboardKpis";
 
 export default async function DashboardPage({
@@ -68,6 +70,14 @@ export default async function DashboardPage({
         </div>
         <PaceBadge status={pace.status} />
       </div>
+
+      <MotivationBanner />
+
+      <Milestone
+        current={s.result.totalCreditableHours}
+        par={s.par}
+        ceiling={s.ceiling}
+      />
 
       <Alerts alerts={alerts} />
 
