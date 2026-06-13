@@ -5,6 +5,7 @@ import type { CompParams } from "@/lib/compensation/types";
 import { trueUpCeiling } from "@/lib/compensation/types";
 import { computeCompensation } from "@/lib/compensation/core";
 import { formatHours } from "@/lib/compensation/format";
+import { applyIsr } from "@/lib/compensation/tax";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { Kpi } from "@/components/Kpi";
 import { ZoneBar } from "@/components/ZoneBar";
@@ -114,12 +115,14 @@ export function Simulator({ params, initialBillable, initialOther }: Props) {
           <Kpi
             label="Salary True-Up"
             value={money(r.salaryTrueUp)}
+            subValue={`Neto ${money(applyIsr(r.salaryTrueUp, params.isrEffectiveRatePct))}`}
             hint={`${formatHours(r.trueUpQualifyingHours)} h calificadas`}
             accent="trueup"
           />
           <Kpi
             label="Production Bonus"
             value={money(r.productionBonus)}
+            subValue={`Neto ${money(applyIsr(r.productionBonus, params.isrEffectiveRatePct))}`}
             hint={
               r.isEligible
                 ? `${formatHours(r.bonusQualifyingHours)} h arriba de ${formatHours(ceiling, 0)}`
@@ -132,6 +135,7 @@ export function Simulator({ params, initialBillable, initialOther }: Props) {
         <Kpi
           label="Compensación variable total"
           value={money(r.totalVariable)}
+          subValue={`Neto ${money(applyIsr(r.totalVariable, params.isrEffectiveRatePct))}`}
           hint={`${formatHours(r.totalCreditableHours)} h creditable totales`}
           accent="default"
         />

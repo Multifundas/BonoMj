@@ -24,6 +24,8 @@ Compensation year: **1 de mayo → 30 de abril**.
 - ✅ Salario, prestaciones y comparativo multi-anual.
 - ✅ Proyección, ritmo y planeador de ausencias.
 - ✅ Simulador what-if, alertas, export CSV, calendario, ajustes y moneda USD/MXN.
+- ✅ Estimación **bruto/neto** con tasa de **ISR efectiva** por año (respeta exentos).
+- ✅ **Manual de uso** en un modal global (botón "?" en el header).
 
 ## Rutas
 
@@ -38,7 +40,7 @@ Compensation year: **1 de mayo → 30 de abril**.
 | `/proyeccion` | Escenarios EOY (conservador/realista/optimista) + ausencias. |
 | `/simulador`  | What-if con sliders y toggle del cap admin (efecto en vivo). |
 | `/calendario` | Resumen mensual de horas y ausencias.                        |
-| `/ajustes`    | Crear años de compensación; perfil, moneda y tipo de cambio. |
+| `/ajustes`    | Crear años de compensación; perfil, moneda, tipo de cambio e ISR. |
 
 ## Desarrollo local
 
@@ -63,6 +65,8 @@ npm run dev       # http://localhost:3000
      trigger `handle_new_user` que crea el profile al registrarse.
    - `0003_views.sql` — vistas derivadas con las fórmulas (techo 1700, gate sobre
      billable, cap admin).
+   - `0004_isr_rate.sql` — columna `isr_effective_rate_pct` en
+     `compensation_years` (tasa de ISR efectiva por año para estimar el neto).
 
    > Alternativa con CLI: `supabase link --project-ref <ref>` y
    > `supabase db push`.
@@ -120,6 +124,7 @@ Toda la lógica es **pura** (sin UI) y la UI debe consumirla, nunca duplicar fó
 | `alerts.ts`       | Generación de alertas/avisos a partir del estado.      |
 | `dates.ts`        | Helpers del compensation year (may–abr).               |
 | `format.ts`       | Formato de moneda/horas/% y conversión USD/MXN.        |
+| `tax.ts`          | ISR efectivo: bruto→neto (respeta exentos `is_taxable`).|
 | `RULES_NOTES.md`  | Inconsistencias documentadas (sección 3).              |
 
 > **Reglas debatibles = parámetros configurables.** Ver `RULES_NOTES.md`. La

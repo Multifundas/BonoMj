@@ -12,6 +12,8 @@ type CurrencyContextValue = {
   setCurrency: (c: Currency) => void;
   /** Formatea un monto en USD a la moneda activa. */
   money: (amountUsd: number) => string;
+  /** Formatea un par bruto/neto (USD) a strings en la moneda activa. */
+  moneyPair: (gross: number, net: number) => { gross: string; net: string };
 };
 
 const CurrencyContext = React.createContext<CurrencyContextValue | null>(null);
@@ -37,9 +39,16 @@ export function CurrencyProvider({
     (amountUsd: number) => fmtMoney(amountUsd, currency, usdMxnRate),
     [currency, usdMxnRate],
   );
+  const moneyPair = React.useCallback(
+    (gross: number, net: number) => ({
+      gross: fmtMoney(gross, currency, usdMxnRate),
+      net: fmtMoney(net, currency, usdMxnRate),
+    }),
+    [currency, usdMxnRate],
+  );
   return (
     <CurrencyContext.Provider
-      value={{ currency, usdMxnRate, setCurrency, money }}
+      value={{ currency, usdMxnRate, setCurrency, money, moneyPair }}
     >
       {children}
     </CurrencyContext.Provider>

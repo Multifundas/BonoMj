@@ -26,6 +26,11 @@ export type CompParams = {
   adminCap: number;
   /** Requisito de evaluación satisfactoria para el bono. Default true. */
   evaluationSatisfactory: boolean;
+  /**
+   * Tasa de ISR efectiva (fracción, ej. 0.20 = 20%) usada para estimar el neto.
+   * Es una aproximación de tasa única, no la tabla progresiva del ISR.
+   */
+  isrEffectiveRatePct: number;
 };
 
 /**
@@ -58,3 +63,6 @@ export type CompResult = {
 /** El techo efectivo del true-up = parHours + trueUpMaxHours. */
 export const trueUpCeiling = (p: CompParams): number =>
   p.parHours + p.trueUpMaxHours;
+
+/** Par bruto/neto para mostrar un monto antes y después de ISR. */
+export type GrossNet = { gross: number; net: number };

@@ -12,3 +12,4 @@ export * from "./pacing";
 export * from "./salary";
 export * from "./format";
 export * from "./alerts";
+export * from "./tax";

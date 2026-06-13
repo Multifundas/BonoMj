@@ -9,6 +9,7 @@ import {
 } from "@/lib/compensation/pacing";
 import { computeCompensation } from "@/lib/compensation/core";
 import { formatHours } from "@/lib/compensation/format";
+import { applyIsr } from "@/lib/compensation/tax";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { PaceBadge } from "@/components/PaceBadge";
 import { Kpi } from "@/components/Kpi";
@@ -64,7 +65,13 @@ export function ProjectionView({
       { billableHours: projected, otherCreditableHours: 0 },
       params,
     );
-    return { kind, label, projected, total: comp.totalVariable };
+    return {
+      kind,
+      label,
+      projected,
+      total: comp.totalVariable,
+      totalNet: applyIsr(comp.totalVariable, params.isrEffectiveRatePct),
+    };
   });
 
   return (
@@ -140,6 +147,7 @@ export function ProjectionView({
                 <TableHead className="text-right">
                   Compensación variable
                 </TableHead>
+                <TableHead className="text-right">Variable neto</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -151,6 +159,9 @@ export function ProjectionView({
                   </TableCell>
                   <TableCell className="text-right font-semibold">
                     {money(r.total)}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums text-muted-foreground">
+                    {money(r.totalNet)}
                   </TableCell>
                 </TableRow>
               ))}

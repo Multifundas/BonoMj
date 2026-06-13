@@ -4,11 +4,14 @@ import { Card, CardContent } from "@/components/ui/card";
 export function Kpi({
   label,
   value,
+  subValue,
   hint,
   accent,
 }: {
   label: string;
   value: string;
+  /** Línea secundaria bajo el valor (ej. "Neto $X"). */
+  subValue?: string;
   hint?: string;
   accent?: "base" | "trueup" | "bonus" | "default";
 }) {
@@ -29,6 +32,11 @@ export function Kpi({
         <p className={cn("mt-1 text-2xl font-bold tabular-nums", accentClass)}>
           {value}
         </p>
+        {subValue && (
+          <p className="mt-0.5 text-sm font-medium tabular-nums text-muted-foreground">
+            {subValue}
+          </p>
+        )}
         {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
       </CardContent>
     </Card>

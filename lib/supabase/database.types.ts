@@ -49,6 +49,7 @@ export type CompensationYear = {
   apply_admin_cap: boolean;
   admin_cap: number;
   evaluation_satisfactory: boolean;
+  isr_effective_rate_pct: number;
   base_salary: number | null;
   salary_paid_to_date: number;
   created_at: string;

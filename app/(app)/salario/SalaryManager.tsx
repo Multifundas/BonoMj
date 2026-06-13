@@ -32,6 +32,7 @@ import {
   type ComponentCategory,
   type ComponentFrequency,
 } from "@/lib/compensation/salary";
+import { applyIsr } from "@/lib/compensation/tax";
 import type { SalaryComponentRow } from "@/lib/supabase/database.types";
 
 const CATEGORIES: { value: ComponentCategory; label: string }[] = [
@@ -48,9 +49,11 @@ const CATEGORIES: { value: ComponentCategory; label: string }[] = [
 export function SalaryManager({
   compYearId,
   components,
+  isr,
 }: {
   compYearId: string;
   components: SalaryComponentRow[];
+  isr: number;
 }) {
   const router = useRouter();
   const { money } = useCurrency();
@@ -164,6 +167,7 @@ export function SalaryManager({
                 <TableHead>Frecuencia</TableHead>
                 <TableHead className="text-right">Mensual</TableHead>
                 <TableHead className="text-right">Anual</TableHead>
+                <TableHead className="text-right">Neto anual</TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
@@ -187,6 +191,16 @@ export function SalaryManager({
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {money(annualizeComponent(comp))}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                      {money(
+                        comp.isTaxable
+                          ? applyIsr(annualizeComponent(comp), isr)
+                          : annualizeComponent(comp),
+                      )}
+                      {!comp.isTaxable && (
+                        <span className="ml-1 text-xs">(exento)</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Button

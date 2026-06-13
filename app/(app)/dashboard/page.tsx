@@ -77,6 +77,7 @@ export default async function DashboardPage({
         trueUp={s.result.salaryTrueUp}
         bonus={s.result.productionBonus}
         isEligible={s.result.isEligible}
+        isr={toCompParams(compYear).isrEffectiveRatePct}
       />
 
       <Card>

@@ -3,6 +3,7 @@
 import { useCurrency } from "@/components/CurrencyProvider";
 import { Kpi } from "@/components/Kpi";
 import { formatHours } from "@/lib/compensation/format";
+import { applyIsr } from "@/lib/compensation/tax";
 
 export function DashboardKpis({
   totalCreditable,
@@ -10,12 +11,14 @@ export function DashboardKpis({
   trueUp,
   bonus,
   isEligible,
+  isr,
 }: {
   totalCreditable: number;
   billable: number;
   trueUp: number;
   bonus: number;
   isEligible: boolean;
+  isr: number;
 }) {
   const { money } = useCurrency();
   return (
@@ -34,12 +37,14 @@ export function DashboardKpis({
       <Kpi
         label="True-up proyectado"
         value={money(trueUp)}
+        subValue={`Neto ${money(applyIsr(trueUp, isr))}`}
         hint="horas 1,200 → 1,700"
         accent="trueup"
       />
       <Kpi
         label="Bono proyectado"
         value={money(bonus)}
+        subValue={`Neto ${money(applyIsr(bonus, isr))}`}
         hint="horas arriba de 1,700"
         accent="bonus"
       />

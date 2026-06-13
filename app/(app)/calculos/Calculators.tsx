@@ -10,6 +10,7 @@ import {
 } from "@/lib/compensation/calculators";
 import type { CompParams } from "@/lib/compensation/types";
 import { formatHours } from "@/lib/compensation/format";
+import { applyIsr } from "@/lib/compensation/tax";
 import { useCurrency } from "@/components/CurrencyProvider";
 import {
   Card,
@@ -226,11 +227,13 @@ function Calc3({ params, snapshot, currentAdmin }: Props) {
             <>
               <p>
                 True-up: <strong>{money(r.trueUp)}</strong> (
-                {formatHours(r.trueUpQualifyingHours)} h).
+                {formatHours(r.trueUpQualifyingHours)} h) · Neto{" "}
+                {money(applyIsr(r.trueUp, params.isrEffectiveRatePct))}.
               </p>
               <p>
                 Bono: <strong>{money(r.bonus)}</strong> (
-                {formatHours(r.bonusQualifyingHours)} h arriba de 1,700).
+                {formatHours(r.bonusQualifyingHours)} h arriba de 1,700) · Neto{" "}
+                {money(applyIsr(r.bonus, params.isrEffectiveRatePct))}.
               </p>
             </>
           ) : (

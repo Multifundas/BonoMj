@@ -16,6 +16,7 @@ export const DEFAULT_COMP_PARAMS: CompParams = {
   applyAdminCap: false,
   adminCap: 100,
   evaluationSatisfactory: true,
+  isrEffectiveRatePct: 0, // sin impuesto hasta que se configure por año (sugerido 0.20).
 };
 
 /** Inicio/fin del compensation year (1-may → 30-abr). Mes 0-indexado. */

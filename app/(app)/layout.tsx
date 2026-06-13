@@ -6,6 +6,7 @@ import {
 } from "@/lib/data/queries";
 import { CurrencyProvider } from "@/components/CurrencyProvider";
 import { CompYearProvider } from "@/components/CompYearProvider";
+import { HelpModal } from "@/components/HelpModal";
 import { Nav } from "./Nav";
 import { CompYearSwitcher } from "./CompYearSwitcher";
 
@@ -31,9 +32,12 @@ export default async function AppLayout({
           <div className="flex flex-1 flex-col">
             <header className="flex items-center justify-between border-b bg-card px-6 py-3">
               <CompYearSwitcher />
-              <p className="text-sm text-muted-foreground">
-                Hola, {profile?.display_name ?? user.email}
-              </p>
+              <div className="flex items-center gap-3">
+                <p className="text-sm text-muted-foreground">
+                  Hola, {profile?.display_name ?? user.email}
+                </p>
+                <HelpModal />
+              </div>
             </header>
             <main className="flex-1 overflow-auto bg-muted/20 p-6">
               {children}

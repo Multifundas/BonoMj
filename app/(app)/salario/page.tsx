@@ -11,10 +11,12 @@ import {
   type SalaryComponent,
   type YearTotal,
 } from "@/lib/compensation/salary";
+import { toCompParams } from "@/lib/compensation/adapters";
+import { applyIsr, componentsGrossNet } from "@/lib/compensation/tax";
 import { EmptyYear } from "@/components/EmptyYear";
 import { SalaryManager } from "./SalaryManager";
 import { MonthlyBreakdown } from "./MonthlyBreakdown";
-import { GrowthSection } from "./GrowthSection";
+import { GrowthSection, type NetByLabel } from "./GrowthSection";
 
 function toPureComponent(c: {
   name: string;
@@ -48,6 +50,7 @@ export default async function SalarioPage({
 
   const s = buildYearSummary(compYear, entries);
   const pureComponents = components.map(toPureComponent);
+  const isr = toCompParams(compYear).isrEffectiveRatePct;
   const breakdown = compensationBreakdown(
     pureComponents,
     s.result.totalVariable,
@@ -55,6 +58,7 @@ export default async function SalarioPage({
 
   // Comparativo multi-año: por cada año, sumar componentes + variable derivado.
   const yearTotals: YearTotal[] = [];
+  const netByLabel: NetByLabel = {};
   for (const y of [...allYears].sort((a, b) =>
     a.start_date.localeCompare(b.start_date),
   )) {
@@ -70,8 +74,8 @@ export default async function SalarioPage({
     const benefits = pcs
       .filter((c) => c.category !== "base")
       .reduce((sum, c) => sum + annualize(c), 0);
-    const total =
-      base + benefits + ys.result.salaryTrueUp + ys.result.productionBonus;
+    const variable = ys.result.salaryTrueUp + ys.result.productionBonus;
+    const total = base + benefits + variable;
     yearTotals.push({
       label: y.label,
       base,
@@ -80,6 +84,10 @@ export default async function SalarioPage({
       bonus: ys.result.productionBonus,
       total,
     });
+    // Neto del año: fijo respeta is_taxable; variable 100% gravable.
+    const yIsr = toCompParams(y).isrEffectiveRatePct;
+    const fixedNet = componentsGrossNet(pcs, yIsr, "annual").net;
+    netByLabel[y.label] = fixedNet + applyIsr(variable, yIsr);
   }
   const growth = yearOverYearGrowth(yearTotals);
 
@@ -95,15 +103,22 @@ export default async function SalarioPage({
       </div>
 
       <MonthlyBreakdown
+        components={pureComponents}
         fixedMonthly={breakdown.fixedMonthly}
         variableMonthly={breakdown.variableMonthly}
+        variableAnnual={breakdown.variableAnnual}
         totalMonthly={breakdown.totalMonthly}
         totalAnnual={breakdown.totalAnnual}
+        isr={isr}
       />
 
-      <SalaryManager compYearId={compYear.id} components={components} />
+      <SalaryManager
+        compYearId={compYear.id}
+        components={components}
+        isr={isr}
+      />
 
-      <GrowthSection growth={growth} />
+      <GrowthSection growth={growth} netByLabel={netByLabel} />
     </div>
   );
 }

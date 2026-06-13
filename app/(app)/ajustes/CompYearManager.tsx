@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatPct } from "@/lib/compensation/format";
 
 function defaultDates() {
   // Año fiscal que contiene hoy (1-may → 30-abr).
@@ -52,6 +53,7 @@ export function CompYearManager({ years }: { years: CompensationYear[] }) {
   const [applyCap, setApplyCap] = React.useState(false);
   const [adminCap, setAdminCap] = React.useState("100");
   const [evalOk, setEvalOk] = React.useState(true);
+  const [isr, setIsr] = React.useState("20");
   const [baseSalary, setBaseSalary] = React.useState("");
   const [paidToDate, setPaidToDate] = React.useState("0");
 
@@ -70,6 +72,7 @@ export function CompYearManager({ years }: { years: CompensationYear[] }) {
       apply_admin_cap: applyCap,
       admin_cap: Number(adminCap) || 0,
       evaluation_satisfactory: evalOk,
+      isr_effective_rate_pct: (Number(isr) || 0) / 100,
       base_salary: baseSalary ? Number(baseSalary) : null,
       salary_paid_to_date: Number(paidToDate) || 0,
     };
@@ -100,6 +103,7 @@ export function CompYearManager({ years }: { years: CompensationYear[] }) {
                 <TableHead>Periodo</TableHead>
                 <TableHead className="text-right">Par</TableHead>
                 <TableHead className="text-right">True-up máx</TableHead>
+                <TableHead className="text-right">ISR</TableHead>
                 <TableHead>Cap admin</TableHead>
               </TableRow>
             </TableHeader>
@@ -113,6 +117,9 @@ export function CompYearManager({ years }: { years: CompensationYear[] }) {
                   <TableCell className="text-right">{y.par_hours}</TableCell>
                   <TableCell className="text-right">
                     {y.true_up_max_hours}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {formatPct(Number(y.isr_effective_rate_pct))}
                   </TableCell>
                   <TableCell>
                     <Badge variant={y.apply_admin_cap ? "warning" : "secondary"}>
@@ -200,6 +207,15 @@ export function CompYearManager({ years }: { years: CompensationYear[] }) {
                 type="number"
                 value={adminCap}
                 onChange={(e) => setAdminCap(e.target.value)}
+              />
+            </Field>
+            <Field label="ISR efectiva (%)" id="cy-isr">
+              <Input
+                id="cy-isr"
+                type="number"
+                step="0.1"
+                value={isr}
+                onChange={(e) => setIsr(e.target.value)}
               />
             </Field>
             <Field label="Salario base (anual)" id="cy-base">

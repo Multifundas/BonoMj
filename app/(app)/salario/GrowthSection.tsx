@@ -20,7 +20,16 @@ import { useCurrency } from "@/components/CurrencyProvider";
 import { formatPct } from "@/lib/compensation/format";
 import type { YearGrowth } from "@/lib/compensation/salary";
 
-export function GrowthSection({ growth }: { growth: YearGrowth[] }) {
+/** Neto total por etiqueta de año (calculado en el servidor con la tasa de cada año). */
+export type NetByLabel = Record<string, number>;
+
+export function GrowthSection({
+  growth,
+  netByLabel,
+}: {
+  growth: YearGrowth[];
+  netByLabel: NetByLabel;
+}) {
   const { money } = useCurrency();
   const data: GrowthDatum[] = growth.map((g) => ({
     label: g.label,
@@ -57,6 +66,7 @@ export function GrowthSection({ growth }: { growth: YearGrowth[] }) {
               <TableHead className="text-right">True-up</TableHead>
               <TableHead className="text-right">Bono</TableHead>
               <TableHead className="text-right">Total</TableHead>
+              <TableHead className="text-right">Total neto</TableHead>
               <TableHead className="text-right">Crecimiento</TableHead>
             </TableRow>
           </TableHeader>
@@ -78,6 +88,9 @@ export function GrowthSection({ growth }: { growth: YearGrowth[] }) {
                 </TableCell>
                 <TableCell className="text-right font-semibold tabular-nums">
                   {money(g.total)}
+                </TableCell>
+                <TableCell className="text-right tabular-nums text-muted-foreground">
+                  {money(netByLabel[g.label] ?? g.total)}
                 </TableCell>
                 <TableCell className="text-right">
                   {g.deltaPct == null ? (

@@ -24,5 +24,6 @@ export function toCompParams(cy: CompensationYear): CompParams {
     applyAdminCap: cy.apply_admin_cap,
     adminCap: Number(cy.admin_cap),
     evaluationSatisfactory: cy.evaluation_satisfactory,
+    isrEffectiveRatePct: Number(cy.isr_effective_rate_pct),
   };
 }
