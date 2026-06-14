@@ -46,6 +46,22 @@ export default async function AppLayout({
                 </p>
               </div>
               <div className="flex items-center gap-3">
+                <span
+                  className="hidden rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground sm:inline-flex sm:items-center sm:gap-1"
+                  title={
+                    liveRate != null
+                      ? "Tipo de cambio en vivo (Frankfurter / BCE)"
+                      : "Tipo de cambio de respaldo (valor guardado en Ajustes)"
+                  }
+                >
+                  1 USD ={" "}
+                  {new Intl.NumberFormat("es-MX", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 4,
+                  }).format(usdMxnRate)}{" "}
+                  MXN
+                  <span aria-hidden>{liveRate != null ? "·🟢" : "·⚪"}</span>
+                </span>
                 <p className="text-sm text-muted-foreground">
                   Hola, {profile?.display_name ?? user.email}
                 </p>

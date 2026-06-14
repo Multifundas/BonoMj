@@ -13,10 +13,33 @@ import {
 } from "@/lib/compensation/salary";
 import { toCompParams } from "@/lib/compensation/adapters";
 import { applyIsr, componentsGrossNet } from "@/lib/compensation/tax";
+import type { SalaryComponentRow } from "@/lib/supabase/database.types";
 import { EmptyYear } from "@/components/EmptyYear";
 import { SalaryManager } from "./SalaryManager";
 import { MonthlyBreakdown } from "./MonthlyBreakdown";
 import { GrowthSection, type NetByLabel } from "./GrowthSection";
+
+/**
+ * Reduce los movimientos a un solo registro vigente por concepto
+ * (category|name): el de effective_date más reciente (desempate por created_at).
+ * El historial completo se conserva aparte para visualización.
+ */
+function latestByConcept(rows: SalaryComponentRow[]): SalaryComponentRow[] {
+  const byKey = new Map<string, SalaryComponentRow>();
+  for (const r of rows) {
+    const key = `${r.category}|${r.name}`;
+    const prev = byKey.get(key);
+    if (
+      !prev ||
+      r.effective_date > prev.effective_date ||
+      (r.effective_date === prev.effective_date &&
+        r.created_at > prev.created_at)
+    ) {
+      byKey.set(key, r);
+    }
+  }
+  return [...byKey.values()];
+}
 
 function toPureComponent(c: {
   name: string;
@@ -49,7 +72,9 @@ export default async function SalarioPage({
   ]);
 
   const s = buildYearSummary(compYear, entries);
-  const pureComponents = components.map(toPureComponent);
+  // El breakdown usa solo el movimiento vigente por concepto; SalaryManager
+  // recibe el historial completo (components) para mostrarlo agrupado.
+  const pureComponents = latestByConcept(components).map(toPureComponent);
   const isr = toCompParams(compYear).isrEffectiveRatePct;
   const breakdown = compensationBreakdown(
     pureComponents,
@@ -67,7 +92,7 @@ export default async function SalarioPage({
       listHourEntries(y.id),
     ]);
     const ys = buildYearSummary(y, ents);
-    const pcs = comps.map(toPureComponent);
+    const pcs = latestByConcept(comps).map(toPureComponent);
     const base = pcs
       .filter((c) => c.category === "base")
       .reduce((sum, c) => sum + annualize(c), 0);

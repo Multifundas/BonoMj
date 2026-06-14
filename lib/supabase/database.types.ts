@@ -78,6 +78,7 @@ export type SalaryComponentRow = {
   amount: number;
   frequency: ComponentFrequency;
   is_taxable: boolean;
+  effective_date: string;
   notes: string | null;
   created_at: string;
 };

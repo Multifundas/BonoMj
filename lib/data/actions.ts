@@ -160,6 +160,7 @@ export type SalaryComponentInput = {
   amount: number;
   frequency: string;
   is_taxable: boolean;
+  effective_date: string;
   notes: string | null;
 };
 
@@ -169,6 +170,20 @@ export async function createSalaryComponent(input: SalaryComponentInput) {
   const { error } = await supabase
     .from("salary_components")
     .insert({ ...input, user_id: userId });
+  if (error) throw new Error(error.message);
+  revalidatePath("/", "layout");
+}
+
+export async function updateSalaryComponent(
+  id: string,
+  input: SalaryComponentInput,
+) {
+  await requireUserId();
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("salary_components")
+    .update(input)
+    .eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/", "layout");
 }

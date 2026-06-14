@@ -8,7 +8,7 @@ import "server-only";
 export async function fetchUsdMxnRate(): Promise<number | null> {
   try {
     const res = await fetch(
-      "https://api.frankfurter.app/latest?from=USD&to=MXN",
+      "https://api.frankfurter.dev/v1/latest?base=USD&symbols=MXN",
       { next: { revalidate: 3600 } }, // máx 1 fetch/hora
     );
     if (!res.ok) return null;

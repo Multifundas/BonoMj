@@ -106,6 +106,7 @@ export async function listSalaryComponents(
     .from("salary_components")
     .select("*")
     .eq("comp_year_id", compYearId)
+    .order("effective_date", { ascending: true })
     .order("created_at", { ascending: true });
   return (data ?? []) as SalaryComponentRow[];
 }
