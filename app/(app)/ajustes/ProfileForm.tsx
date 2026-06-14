@@ -49,8 +49,9 @@ export function ProfileForm({
       <CardHeader>
         <CardTitle>Perfil y moneda</CardTitle>
         <CardDescription>
-          La moneda por defecto y el tipo de cambio USD→MXN aplican a toda la
-          app.
+          La moneda por defecto aplica a toda la app. El tipo de cambio USD→MXN
+          se actualiza automáticamente al entrar (datos del BCE); el valor que
+          guardes aquí se usa como respaldo si la actualización automática falla.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

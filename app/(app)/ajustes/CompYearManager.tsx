@@ -2,7 +2,12 @@
 
 import * as React from "react";
 import type { CompensationYear } from "@/lib/supabase/database.types";
-import { createCompYear, type CompYearInput } from "@/lib/data/actions";
+import {
+  createCompYear,
+  updateCompYear,
+  deleteCompYear,
+  type CompYearInput,
+} from "@/lib/data/actions";
 import {
   Card,
   CardContent,
@@ -22,6 +27,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { formatPct } from "@/lib/compensation/format";
 
 function defaultDates() {
@@ -40,6 +52,8 @@ function defaultDates() {
 export function CompYearManager({ years }: { years: CompensationYear[] }) {
   const [pending, startTransition] = React.useTransition();
   const [error, setError] = React.useState<string | null>(null);
+  const [editingId, setEditingId] = React.useState<string | null>(null);
+  const [toDelete, setToDelete] = React.useState<CompensationYear | null>(null);
   const d = defaultDates();
 
   const [label, setLabel] = React.useState(d.label);
@@ -57,7 +71,46 @@ export function CompYearManager({ years }: { years: CompensationYear[] }) {
   const [baseSalary, setBaseSalary] = React.useState("");
   const [paidToDate, setPaidToDate] = React.useState("0");
 
-  function onCreate() {
+  function resetForm() {
+    setLabel(d.label);
+    setStartDate(d.start);
+    setEndDate(d.end);
+    setParHours("1200");
+    setTrueUpMax("500");
+    setBonusRatePct("37.5");
+    setBlendedRate("318.4");
+    setTrueUpRate("70.35054");
+    setApplyCap(false);
+    setAdminCap("100");
+    setEvalOk(true);
+    setIsr("20");
+    setBaseSalary("");
+    setPaidToDate("0");
+    setEditingId(null);
+    setError(null);
+  }
+
+  function loadYear(y: CompensationYear) {
+    setLabel(y.label);
+    setStartDate(y.start_date);
+    setEndDate(y.end_date);
+    setParHours(String(y.par_hours));
+    setTrueUpMax(String(y.true_up_max_hours));
+    // bonus_rate_pct e isr se guardan como fracción → mostrar ×100.
+    setBonusRatePct(String(Number(y.bonus_rate_pct) * 100));
+    setBlendedRate(y.blended_billing_rate != null ? String(y.blended_billing_rate) : "");
+    setTrueUpRate(String(y.true_up_rate_per_hour));
+    setApplyCap(y.apply_admin_cap);
+    setAdminCap(String(y.admin_cap));
+    setEvalOk(y.evaluation_satisfactory);
+    setIsr(String(Number(y.isr_effective_rate_pct) * 100));
+    setBaseSalary(y.base_salary != null ? String(y.base_salary) : "");
+    setPaidToDate(String(y.salary_paid_to_date));
+    setEditingId(y.id);
+    setError(null);
+  }
+
+  function onSubmit() {
     setError(null);
     const input: CompYearInput = {
       label,
@@ -78,9 +131,35 @@ export function CompYearManager({ years }: { years: CompensationYear[] }) {
     };
     startTransition(async () => {
       try {
-        await createCompYear(input);
+        if (editingId) {
+          await updateCompYear(editingId, input);
+        } else {
+          await createCompYear(input);
+        }
+        resetForm();
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Error al crear el año");
+        setError(
+          e instanceof Error
+            ? e.message
+            : editingId
+              ? "Error al guardar los cambios"
+              : "Error al crear el año",
+        );
+      }
+    });
+  }
+
+  function onConfirmDelete() {
+    if (!toDelete) return;
+    const id = toDelete.id;
+    setError(null);
+    startTransition(async () => {
+      try {
+        await deleteCompYear(id);
+        setToDelete(null);
+        if (editingId === id) resetForm();
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Error al eliminar el año");
       }
     });
   }
@@ -105,6 +184,7 @@ export function CompYearManager({ years }: { years: CompensationYear[] }) {
                 <TableHead className="text-right">True-up máx</TableHead>
                 <TableHead className="text-right">ISR</TableHead>
                 <TableHead>Cap admin</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -126,6 +206,26 @@ export function CompYearManager({ years }: { years: CompensationYear[] }) {
                       {y.apply_admin_cap ? `ON · ${y.admin_cap}` : "OFF"}
                     </Badge>
                   </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={pending}
+                        onClick={() => loadYear(y)}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        disabled={pending}
+                        onClick={() => setToDelete(y)}
+                      >
+                        Eliminar
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -133,7 +233,9 @@ export function CompYearManager({ years }: { years: CompensationYear[] }) {
         )}
 
         <div className="rounded-lg border p-4">
-          <p className="mb-4 text-sm font-semibold">Nuevo año de compensación</p>
+          <p className="mb-4 text-sm font-semibold">
+            {editingId ? `Editar año (${label})` : "Nuevo año de compensación"}
+          </p>
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Etiqueta" id="cy-label">
               <Input
@@ -259,13 +361,53 @@ export function CompYearManager({ years }: { years: CompensationYear[] }) {
 
           {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
 
-          <div className="mt-4">
-            <Button onClick={onCreate} disabled={pending}>
-              Crear año
+          <div className="mt-4 flex gap-2">
+            <Button onClick={onSubmit} disabled={pending}>
+              {editingId ? "Guardar cambios" : "Crear año"}
             </Button>
+            {editingId && (
+              <Button
+                variant="outline"
+                onClick={resetForm}
+                disabled={pending}
+              >
+                Cancelar
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>
+
+      <Dialog open={toDelete !== null} onOpenChange={(o) => !o && setToDelete(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Eliminar año de compensación</DialogTitle>
+            <DialogDescription>
+              ¿Seguro que quieres eliminar{" "}
+              <span className="font-semibold">{toDelete?.label}</span>? Esta
+              acción es permanente y borrará en cascada todas las horas
+              capturadas, componentes de salario, metas y ausencias asociadas a
+              este año.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setToDelete(null)}
+              disabled={pending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={onConfirmDelete}
+              disabled={pending}
+            >
+              Eliminar definitivamente
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

@@ -8,6 +8,7 @@ import { CurrencyProvider } from "@/components/CurrencyProvider";
 import { CompYearProvider } from "@/components/CompYearProvider";
 import { HelpModal } from "@/components/HelpModal";
 import { quoteOfTheDay } from "@/lib/quotes";
+import { fetchUsdMxnRate } from "@/lib/data/fx";
 import { Nav } from "./Nav";
 import { CompYearSwitcher } from "./CompYearSwitcher";
 
@@ -19,10 +20,15 @@ export default async function AppLayout({
   const user = await getUser();
   if (!user) redirect("/login");
 
-  const [profile, years] = await Promise.all([getProfile(), listCompYears()]);
+  const [profile, years, liveRate] = await Promise.all([
+    getProfile(),
+    listCompYears(),
+    fetchUsdMxnRate(),
+  ]);
 
   const currency = profile?.currency_default ?? "USD";
-  const usdMxnRate = profile?.usd_mxn_rate ?? 17;
+  // Tipo de cambio en vivo; si la API falla, usa el guardado o el default.
+  const usdMxnRate = liveRate ?? profile?.usd_mxn_rate ?? 17;
   const activeId = years[0]?.id ?? null;
   const dailyQuote = quoteOfTheDay();
 

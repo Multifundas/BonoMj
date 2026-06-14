@@ -81,6 +81,21 @@ export async function updateCompYear(id: string, input: Partial<CompYearInput>) 
   revalidatePath("/", "layout");
 }
 
+export async function deleteCompYear(id: string) {
+  const userId = await requireUserId();
+  const supabase = createClient();
+  // Auditar antes de borrar: el FK de audit_log es "set null", no cascada.
+  await logAudit(userId, id, "compensation_year", id, "delete", {});
+  // Los hijos (hour_entries, salary_components, goals, planned_absences)
+  // tienen "on delete cascade", así que se eliminan automáticamente.
+  const { error } = await supabase
+    .from("compensation_years")
+    .delete()
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/", "layout");
+}
+
 // ---------------------------------------------------------------------------
 // Hour entries
 // ---------------------------------------------------------------------------

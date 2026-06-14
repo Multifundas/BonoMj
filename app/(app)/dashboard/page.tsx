@@ -88,6 +88,7 @@ export default async function DashboardPage({
         bonus={s.result.productionBonus}
         isEligible={s.result.isEligible}
         isr={toCompParams(compYear).isrEffectiveRatePct}
+        par={s.par}
       />
 
       <Card>

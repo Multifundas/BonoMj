@@ -21,12 +21,17 @@ export function formatMoney(
   usdMxnRate = 1,
 ): string {
   const value = convertFromUsd(amountUsd, currency, usdMxnRate);
-  return new Intl.NumberFormat(currency === "MXN" ? "es-MX" : "en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
+  const formatted = new Intl.NumberFormat(
+    currency === "MXN" ? "es-MX" : "en-US",
+    {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    },
+  ).format(value);
+  // Sufijo explícito de moneda (ej. "$1,200.00 USD" / "$20,400.00 MXN").
+  return `${formatted} ${currency}`;
 }
 
 /** Formatea horas (1 decimal por defecto). */
