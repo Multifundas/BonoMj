@@ -10,6 +10,7 @@ export function DashboardKpis({
   billable,
   trueUp,
   bonus,
+  totalVariable,
   isEligible,
   isr,
   par,
@@ -18,6 +19,7 @@ export function DashboardKpis({
   billable: number;
   trueUp: number;
   bonus: number;
+  totalVariable: number;
   isEligible: boolean;
   isr: number;
   par: number;
@@ -25,16 +27,20 @@ export function DashboardKpis({
   const { money } = useCurrency();
   const parLabel = formatHours(par, 0);
   const billableGap = Math.max(par - billable, 0);
+  // Las horas cruzan el gate (≠ elegibilidad, que también exige evaluación OK).
+  const crossedGate = billable > par;
 
-  // Explica por qué el bono está activo o no (el gate es sobre horas billable).
+  // Explica por qué el bono está activo o no.
+  // El gate del bono = horas billable > par Y evaluación satisfactoria.
   const bonusHint = isEligible
     ? "horas arriba de 1,700"
     : billableGap > 0
       ? `Bono no activo: faltan ${formatHours(billableGap)} h billable para cruzar el gate de ${parLabel}`
-      : "Bono no activo: evaluación no satisfactoria";
+      : `Bono no activo: marca "Evaluación satisfactoria" en Ajustes`;
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <Kpi
         label="Total creditable"
         value={formatHours(totalCreditable)}
@@ -44,7 +50,7 @@ export function DashboardKpis({
         label="Billable"
         value={formatHours(billable)}
         hint={
-          isEligible
+          crossedGate
             ? `gate de ${parLabel} superado`
             : `aún no cruza ${parLabel}`
         }
@@ -66,6 +72,26 @@ export function DashboardKpis({
         hint={bonusHint}
         accent="bonus"
       />
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border bg-gradient-to-r from-primary/10 via-accent to-secondary px-6 py-5">
+        <div>
+          <p className="text-sm font-medium text-primary">
+            Compensación variable total
+          </p>
+          <p className="text-xs text-muted-foreground">
+            True-up + bono proyectados
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-2xl font-bold tabular-nums text-foreground">
+            {money(totalVariable)}
+          </p>
+          <p className="text-sm text-muted-foreground tabular-nums">
+            Neto {money(applyIsr(totalVariable, isr))}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

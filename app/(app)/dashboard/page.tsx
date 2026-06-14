@@ -86,6 +86,7 @@ export default async function DashboardPage({
         billable={s.result.billableHours}
         trueUp={s.result.salaryTrueUp}
         bonus={s.result.productionBonus}
+        totalVariable={s.result.totalVariable}
         isEligible={s.result.isEligible}
         isr={toCompParams(compYear).isrEffectiveRatePct}
         par={s.par}
